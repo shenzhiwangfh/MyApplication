@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * The current state of camera state for taking pictures.
      *
-     * @see #mCaptureCallback
+     * @see # mCaptureCallback
      */
     private int mState = STATE_PREVIEW;
 
@@ -257,7 +257,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Whether the current camera device supports Flash or not.
      */
-    private boolean mFlashSupported;
+    private boolean mFlashSupported = false;
 
     /**
      * Orientation of the camera sensor
@@ -267,16 +267,22 @@ public class MainActivity extends AppCompatActivity
     /**
      * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
      */
+    /*
     private CameraCaptureSession.CaptureCallback mCaptureCallback
             = new CameraCaptureSession.CaptureCallback() {
 
         private void process(CaptureResult result) {
+            //Log.i(TAG, "process,result=" + result);
+            Log.i(TAG, "process,mState=" + mState);
+
             switch (mState) {
                 case STATE_PREVIEW: {
+                    Log.i(TAG, "process,STATE_PREVIEW");
                     // We have nothing to do when the camera preview is working normally.
                     break;
                 }
                 case STATE_WAITING_LOCK: {
+                    Log.i(TAG, "process,STATE_WAITING_LOCK");
                     Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
                     if (afState == null) {
                         captureStillPicture();
@@ -295,6 +301,7 @@ public class MainActivity extends AppCompatActivity
                     break;
                 }
                 case STATE_WAITING_PRECAPTURE: {
+                    Log.i(TAG, "process,STATE_WAITING_PRECAPTURE");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null ||
@@ -305,6 +312,7 @@ public class MainActivity extends AppCompatActivity
                     break;
                 }
                 case STATE_WAITING_NON_PRECAPTURE: {
+                    Log.i(TAG, "process,STATE_WAITING_NON_PRECAPTURE");
                     // CONTROL_AE_STATE can be null on some devices
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
                     if (aeState == null || aeState != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
@@ -320,6 +328,7 @@ public class MainActivity extends AppCompatActivity
         public void onCaptureProgressed(@NonNull CameraCaptureSession session,
                                         @NonNull CaptureRequest request,
                                         @NonNull CaptureResult partialResult) {
+            Log.i(TAG, "onCaptureProgressed,partialResult=" + partialResult);
             process(partialResult);
         }
 
@@ -327,10 +336,12 @@ public class MainActivity extends AppCompatActivity
         public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                        @NonNull CaptureRequest request,
                                        @NonNull TotalCaptureResult result) {
+            Log.i(TAG, "onCaptureCompleted,result=" + result);
             process(result);
         }
 
     };
+    */
 
     /**
      * Shows a {@link Toast} on the UI thread.
@@ -339,12 +350,12 @@ public class MainActivity extends AppCompatActivity
      */
     private void showToast(final String text) {
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
-                }
-            });
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, text, Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
@@ -433,24 +444,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void requestCameraPermission() {
-        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            //new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
-        } else {
-            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
-        }
+        //if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+        //new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
+        //} else {
+        requestPermissions(new String[]{
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA_PERMISSION);
+        //}
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                //ErrorDialog.newInstance(getString(R.string.request_permission))
-                //        .show(getChildFragmentManager(), FRAGMENT_DIALOG);
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
+        //if (requestCode == REQUEST_CAMERA_PERMISSION) {
+        //    if (grantResults.length != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+        //ErrorDialog.newInstance(getString(R.string.request_permission))
+        //        .show(getChildFragmentManager(), FRAGMENT_DIALOG);
+        //    }
+        //} else {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //}
     }
 
     /**
@@ -551,8 +564,8 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 // Check if the flash is supported.
-                Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
-                mFlashSupported = available == null ? false : available;
+                //Boolean available = characteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
+                //mFlashSupported = available == null ? false : available;
 
                 mCameraId = cameraId;
                 return;
@@ -670,15 +683,31 @@ public class MainActivity extends AppCompatActivity
                             mCaptureSession = cameraCaptureSession;
                             try {
                                 // Auto focus should be continuous for camera preview.
-                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                                        CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                                //mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                                //        CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                                 // Flash is automatically enabled when necessary.
                                 setAutoFlash(mPreviewRequestBuilder);
 
+
+                                CameraCaptureSession.CaptureCallback CaptureCallback
+                                        = new CameraCaptureSession.CaptureCallback() {
+
+                                    @Override
+                                    public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                                                   @NonNull CaptureRequest request,
+                                                                   @NonNull TotalCaptureResult result) {
+                                        Log.e(TAG, "onCaptureCompleted22");
+
+                                        showToast("Saved: " + mFile);
+                                        Log.d(TAG, mFile.toString());
+                                        //unlockFocus();
+                                    }
+                                };
+
+
                                 // Finally, we start displaying the camera preview.
                                 mPreviewRequest = mPreviewRequestBuilder.build();
-                                mCaptureSession.setRepeatingRequest(mPreviewRequest,
-                                        mCaptureCallback, mBackgroundHandler);
+                                mCaptureSession.setRepeatingRequest(mPreviewRequest, CaptureCallback, mBackgroundHandler);
                             } catch (CameraAccessException e) {
                                 e.printStackTrace();
                             }
@@ -732,12 +761,15 @@ public class MainActivity extends AppCompatActivity
      * Initiate a still image capture.
      */
     private void takePicture() {
-        lockFocus();
+        //lockFocus();
+
+        captureStillPicture();
     }
 
     /**
      * Lock the focus as the first step for a still image capture.
      */
+    /*
     private void lockFocus() {
         try {
             // This is how to tell the camera to lock focus.
@@ -745,17 +777,21 @@ public class MainActivity extends AppCompatActivity
                     CameraMetadata.CONTROL_AF_TRIGGER_START);
             // Tell #mCaptureCallback to wait for the lock.
             mState = STATE_WAITING_LOCK;
+
+            Log.i(TAG, "lockFocus,capture");
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
+    */
 
     /**
      * Run the precapture sequence for capturing a still image. This method should be called when
      * we get a response in {@link #mCaptureCallback} from {@link #lockFocus()}.
      */
+    /*
     private void runPrecaptureSequence() {
         try {
             // This is how to tell the camera to trigger.
@@ -769,10 +805,11 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
+    */
 
     /**
      * Capture a still picture. This method should be called when we get a response in
-     * {@link #mCaptureCallback} from both {@link #lockFocus()}.
+     * {@link # mCaptureCallback} from both {@link # lockFocus()}.
      */
     private void captureStillPicture() {
         try {
@@ -785,9 +822,9 @@ public class MainActivity extends AppCompatActivity
             captureBuilder.addTarget(mImageReader.getSurface());
 
             // Use the same AE and AF modes as the preview.
-            captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            setAutoFlash(captureBuilder);
+            //captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+            //        CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+            //setAutoFlash(captureBuilder);
 
             // Orientation
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
@@ -800,14 +837,18 @@ public class MainActivity extends AppCompatActivity
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
+                    Log.e(TAG, "onCaptureCompleted");
+
                     showToast("Saved: " + mFile);
                     Log.d(TAG, mFile.toString());
-                    unlockFocus();
+                    //unlockFocus();
                 }
             };
 
             mCaptureSession.stopRepeating();
             mCaptureSession.abortCaptures();
+
+            Log.e(TAG, "capture");
             mCaptureSession.capture(captureBuilder.build(), CaptureCallback, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -832,14 +873,15 @@ public class MainActivity extends AppCompatActivity
      * Unlock the focus. This method should be called when still image capture sequence is
      * finished.
      */
+    /*
     private void unlockFocus() {
         try {
             // Reset the auto-focus trigger
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
-                    CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+            //mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+            //        CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
             setAutoFlash(mPreviewRequestBuilder);
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
-                    mBackgroundHandler);
+            //mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
+            //        mBackgroundHandler);
             // After this, the camera will go back to the normal state of preview.
             mState = STATE_PREVIEW;
             mCaptureSession.setRepeatingRequest(mPreviewRequest, mCaptureCallback,
@@ -848,11 +890,13 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
+    */
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
+                Log.e(TAG, "takePicture");
                 takePicture();
                 break;
             }
@@ -890,6 +934,8 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         public void run() {
+            Log.e(TAG, "ImageSaver");
+
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);

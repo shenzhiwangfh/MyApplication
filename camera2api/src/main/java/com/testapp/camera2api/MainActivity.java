@@ -696,10 +696,10 @@ public class MainActivity extends AppCompatActivity
                                     public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                                    @NonNull CaptureRequest request,
                                                                    @NonNull TotalCaptureResult result) {
-                                        Log.e(TAG, "onCaptureCompleted22");
+                                        //Log.e(TAG, "onCaptureCompleted22");
 
-                                        showToast("Saved: " + mFile);
-                                        Log.d(TAG, mFile.toString());
+                                        //showToast("Saved: " + mFile);
+                                        //Log.d(TAG, mFile.toString());
                                         //unlockFocus();
                                     }
                                 };
@@ -842,6 +842,8 @@ public class MainActivity extends AppCompatActivity
                     showToast("Saved: " + mFile);
                     Log.d(TAG, mFile.toString());
                     //unlockFocus();
+
+                    restartPreview();
                 }
             };
 
@@ -891,6 +893,31 @@ public class MainActivity extends AppCompatActivity
         }
     }
     */
+    private void restartPreview() {
+        try {
+            CameraCaptureSession.CaptureCallback CaptureCallback
+                    = new CameraCaptureSession.CaptureCallback() {
+
+                @Override
+                public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                               @NonNull CaptureRequest request,
+                                               @NonNull TotalCaptureResult result) {
+                    //Log.e(TAG, "onCaptureCompleted22");
+
+                    //showToast("Saved: " + mFile);
+                    //Log.d(TAG, mFile.toString());
+                    //unlockFocus();
+                }
+            };
+
+
+            // Finally, we start displaying the camera preview.
+            mPreviewRequest = mPreviewRequestBuilder.build();
+            mCaptureSession.setRepeatingRequest(mPreviewRequest, CaptureCallback, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+
+        }
+    }
 
     @Override
     public void onClick(View view) {

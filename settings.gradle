@@ -1,1 +1,1 @@
-include ':app', ':surfacedemo'
+include ':app', ':surfacedemo', ':camera2api'
